@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data>
+
+        <template id="fency_report_invoice_document">
+            <t t-if="o and 'company_id' in o">
+                <t t-set="company" t-value="o.company_id"></t>
+            </t>
+            <t t-if="not o or not 'company_id' in o">
+                <t t-set="company" t-value="res_company"></t>
+            </t>
+            <div class="header">
+                <div class="row mt32 mb32">
+                    <div class="text-center">
+                        <img t-if="company.logo" t-att-src="image_data_uri(company.logo)"
+                            style="max-width: 800px;"/>
+                    </div>
+                </div>
+                <div class="row mt32 mb32">
+                    <div class="col-2">
+                    </div>
+                    <div class="col-8" style="font:20px; font-family: Arial, Helvetica, sans-serif, 'Amiri'; !important;">
+                        <span>Address: </span>
+                        <span t-if="company.partner_id.street">
+                            <span t-if="company.partner_id.street" t-field="company.partner_id.street"/>
+                        </span>                      
+                        <span t-if="company.partner_id.city" t-field="company.partner_id.city"/>
+                        <span t-if="company.partner_id.city">, </span>
+                        <span t-if="company.partner_id.country_id" t-field="company.partner_id.country_id"/>
+                        <br/>
+                        <span>Tel:  </span>
+                        <span t-if="company.partner_id.phone" t-field="company.partner_id.phone"/>
+                        <span t-if="company.partner_id.mobile" t-field="company.partner_id.mobile"/>
+                        <br/>
+                        <br/>
+                    </div>
+                    <div class="col-2">
+                    </div>
+                </div>
+            </div>
+
+            <t t-call="web.external_layout">
+                <t t-set="o" t-value="o.with_context({'lang':o.partner_id.lang})"/>
+                <div class="page">
+                <br/>
+                <br/>
+                <br/>
+                    <div class="row mt32 mb32" t-attf-style="color:#{company.text_color_account}; !important; font-size: 20px;">
+                    
+                        <div class="col-3" t-if="o.invoice_date">
+                            <font>
+                                <strong>Customer Name:</strong>
+                                <p t-field="o.partner_id"/>
+                            </font>
+                        </div>
+                        <div class="col-3"
+                                t-if="o.invoice_date_due and o.move_type == 'out_invoice' and (o.state == 'draft' or o.state == 'posted')">
+                            <font>
+                                <strong>Invoice:</strong>
+                                <p t-field="o.name"/>
+                            </font>
+                        </div>
+                        <div class="col-3">
+                            <font>
+                                <strong>Date:</strong>
+                                <p t-field="o.invoice_date"/>
+                            </font>
+                        </div>
+                        <div class="col-3" name="reference">
+                            <font>
+                                <strong>Reference:</strong>
+                                <p t-field="o.invoice_origin"/>
+                            </font>
+                        </div>
+                    </div>
+                    <div>
+                        <t t-set="display_discount" t-value="any([l.discount for l in o.invoice_line_ids])"/>
+                        <table class="table table-borderless">
+                            <thead  >
+                                <tr class="border-black" style="border: 2px solid black; border-left: none; border-right: none;">
+                                    <th t-attf-style="font-family: Arial, Helvetica, sans-serif; background-color:#{company.color_account}; !important;color:#{company.text_color_account}; !important; solid black"
+                                >
+                                        Description
+                                    </th>
+                                    <th class="text-right"
+                                        t-attf-style="background-color:#{company.color_account}; !important;color:#{company.text_color_account}; !important; solid black">
+                                        Quantity
+                                    </th>
+                                    <th class="text-right"
+                                        t-attf-style="background-color:#{company.color_account}; !important;color:#{company.text_color_account}; !important; solid black"
+                                        >
+                                        Unit Price
+                                    </th>
+                                    <th class="text-right"
+                                        t-attf-style="background-color:#{company.color_account}; !important;color:#{company.text_color_account}; !important; solid black">
+                                        Amount
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="invoice_tbody">
+                                <tr t-foreach="o.invoice_line_ids" t-as="l" class="border-black">
+                                    <td  style="solid black">
+                                        <span t-field="l.name"/>
+                                    </td>
+                                    <td  style="solid black" class="text-center">
+                                        <span t-field="l.quantity"/>
+                                        <span t-field="l.uom_id" groups="product.group_uom"/>
+                                    </td>
+                                    <td  style="solid black" class="text-center">
+                                        <span t-field="l.price_unit"/>
+                                    </td>
+                                    <td  style="solid black" class="text-center">
+                                        <span t-field="l.price_subtotal"/>
+                                    </td>
+                                </tr>
+                                <tr class="border-black"
+                                    t-attf-style="background-color:#{company.color_account}; !important; color:#{company.text_color_account}; !important;">
+                                    <td style="solid black">
+                                        <!-- <strong>Subtotal</strong> -->
+                                    </td>
+                                    <td  style="border: 2px solid black; border-left: none; border-right: none;" class="text-right">
+                                        <!-- <span t-field="o.amount_untaxed"
+                                            t-field-options='{"widget": "monetary", "display_currency": "o.currency_id"}'/> -->
+                                    </td>
+                                    <td t-attf-style="background-color:#{company.color_account}; !important;color:#{company.text_color_account}; !important; solid black;
+                                    border: 2px solid black; border-left: none; border-right: none; border-top: none;" class="text-center">
+                                        <strong>TOTAL</strong>
+                                    </td>
+                                    <td  style="solid black" class="text-center" t-attf-style="border: 2px solid black; border-left: none; border-right: none; border-top: none;">
+                                        <span t-field="o.amount_total"
+                                            t-field-options='{"widget": "monetary", "display_currency": "o.currency_id"}'/>
+                                    </td>
+                                </tr>                                
+                                <tr class="border-black"
+                                    t-attf-style="background-color:#{company.color_account}; !important; color:#{company.text_color_account}; !important;">
+                                    <td style="border: none !important;">
+
+                                    </td>
+                                    
+                                    <!--Payments-->
+                                    <t t-if="print_with_payments">
+                                        <t t-if="o.payment_state != 'invoicing_legacy'">
+                                            <t t-set="payments_vals" t-value="o.sudo().invoice_payments_widget and o.sudo().invoice_payments_widget['content'] or []"/>
+                                            <t t-foreach="payments_vals" t-as="payment_vals">
+                                                <t t-if="payment_vals['is_exchange'] == 0">
+                                                    <td colspan="2" style="border: 2px solid black; border-left: none; border-right: none;">
+                                                        <i class="oe_form_field text-end oe_payment_label">Paid on <t t-esc="payment_vals['date']" t-options="{&quot;widget&quot;: &quot;date&quot;}"/></i>
+                                                    </td>
+                                                    <td class="text-center" style="border: 2px solid black; border-left: none; border-right: none;">
+                                                        <span t-esc="payment_vals['amount']" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                                    </td>
+                                                </t>
+                                            </t>
+                                        </t>
+                                    </t>
+                                </tr>
+                                
+                                <tr class="border-black"
+                                    t-attf-style="background-color:#{company.color_account}; !important; color:#{company.text_color_account}; !important;">
+                                    <td style="border: none !important;">
+                                        <!-- <strong>Subtotal</strong> -->
+                                    </td>
+
+                                    <td t-attf-style="background-color:#{company.color_account}; !important;color:#{company.text_color_account}; !important; solid black;
+                                    border: 2px solid black; border-left: none; border-right: none; border-top: none;" class="text-center" colspan="2">
+                                        <strong>Amount Due</strong>
+                                    </td>
+
+                                    <td  style="solid black" class="text-center" t-attf-style="border: 2px solid black; border-left: none; border-right: none; border-top: none;">
+                                        <span t-field="o.amount_residual"
+                                            t-field-options='{"widget": "monetary", "display_currency": "o.currency_id"}'/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <br/>
+                        <br/>
+                        <p>
+                        Signature: _______________________</p>
+                    </div>
+                    <br/>
+                    <br/>
+                    <br/>
+                    <br/>
+                    <div style="padding-top:50px;">
+                    </div>
+                    <p t-if="o.narration">
+                        <strong>Comment:</strong>
+                        <span t-field="o.narration"/>
+                    </p>
+                    <p t-if="o.paypal_chk">
+                        <strong t-attf-style="color:#{company.text_color_account}; !important;">Paypal Account Details
+                        </strong>
+                        <br/>
+                        <span>Paypal Id :</span>
+                        <span t-field="o.paypal_id"/>
+                    </p>
+                    <br/>
+                    <br/>
+                    <p t-if="o.paypal_chk == False">
+                        <div t-attf-style="background-color:#{company.color_account}; !important; color:#{company.text_color_account}; !important;"
+                            t-if="o.company_id.bank_account_id.acc_number">
+                            <strong>Bank Account Details</strong>
+                            <br/>
+                            <span>Account Id :</span>
+                            <span t-field="o.company_id.bank_account_id.acc_number"/>
+                            <br/>
+                            <span>Bank Name :</span>
+                            <span  t-field="o.company_id.bank_account_id.bank_id.name"/>
+                            <br/>
+                            <span>Branch Name/Address :</span>
+                            <span  t-field="o.company_id.bank_account_id.branch_name"/>
+                            <br/>
+                            <span  t-field="o.company_id.bank_account_id.street"/>
+                            <br/>
+                            <span  t-field="o.company_id.bank_account_id.street2"/>
+
+                            <span  t-field="o.company_id.bank_account_id.city"/>
+                            <span>,</span>
+                            <span  t-field="o.company_id.bank_account_id.zip"/>
+                            <br/>
+                            <span  t-field="o.company_id.bank_account_id.state_id"/>
+                            <span>,</span>
+                            <span st-field="o.company_id.bank_account_id.country_id"/>
+                            <br/>
+                            <span>Swift Code :</span>
+                            <span  t-field="o.company_id.bank_account_id.swift_code"/>
+                            <br/>
+                            <span>IFSC Code :</span>
+                            <span  t-field="o.company_id.bank_account_id.ifsc"/>
+                            <br/>
+                        </div>
+
+                    </p>
+                    <p t-attf-style="color:#{company.text_color_account}; !important;" t-if="o.fiscal_position_id.note">
+                        <strong>Fiscal Position Remark:</strong>
+                        <span t-field="o.fiscal_position_id.note"/>
+                    </p>
+                </div>
+            </t>
+        </template>
+
+
+        <template id="report_invoice_document_prof_report" inherit_id="account.report_invoice_document">
+            <xpath expr="//t[@t-call='web.external_layout']" position="replace">
+                <t t-call="web.html_container">
+                    <t t-foreach="docs" t-as="o">
+                        <t t-set="lang"
+                        t-value="o.invoice_user_id.sudo().lang if o.move_type in ('in_invoice', 'in_refund') else o.partner_id.lang"/>
+                        <t t-set="print_with_payments" t-value="True"/>
+                        <t t-if="o.company_id.account_template == 'fency' ">
+                            <t t-call="invoice_extends.fency_report_invoice_document" t-lang="lang"/>
+                        </t>
+                        <t t-if="o.company_id.account_template == 'classic' ">
+                            <t t-call="invoice_extends.classic_report_invoice_document" t-lang="o.partner_id.lang"/>
+                        </t>
+                        <t t-if="o.company_id.account_template == 'modern' ">
+                            <t t-call="invoice_extends.modern_report_invoice_document" t-lang="o.partner_id.lang"/>
+                        </t>
+                        <t t-if="o.company_id.account_template == 'odoo_standard' ">
+                            <t t-call="invoice_extends.odoo_std_report_invoice_document" t-lang="o.partner_id.lang"/>
+                        </t>
+                    </t>
+                </t>
+            </xpath>
+        </template>
+    </data>
+</odoo>
